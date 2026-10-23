@@ -32,7 +32,7 @@
 
   // Collection filter
   var filterButtons = document.querySelectorAll(".filter-bar button");
-  var products = document.querySelectorAll(".product");
+  var products = document.querySelectorAll(".product-grid .product");
   filterButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
       filterButtons.forEach(function (b) { b.classList.remove("active"); });
@@ -96,6 +96,74 @@
       window.location.href =
         "mailto:nambabi2609@gmail.com?subject=" + encodeURIComponent(subject) +
         "&body=" + encodeURIComponent(body);
+    });
+  }
+
+  // Order modal -> visitor leaves contact details, request is sent by email
+  var modal = document.querySelector("#order-modal");
+  if (modal) {
+    var orderForm = modal.querySelector("#order-form");
+    var mImg = modal.querySelector(".modal-product img");
+    var mName = modal.querySelector("[data-order-name]");
+    var mCat = modal.querySelector("[data-order-cat]");
+
+    var openModal = function (btn) {
+      var product = btn.dataset.product;
+      orderForm.reset();
+      orderForm.elements.product.value = product;
+      mName.textContent = product;
+      mCat.textContent = btn.dataset.cat || "";
+      if (btn.dataset.img) {
+        mImg.src = btn.dataset.img;
+        mImg.alt = product;
+        mImg.style.display = "";
+      } else {
+        mImg.style.display = "none";
+      }
+      modal.classList.remove("sent");
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("no-scroll");
+      setTimeout(function () { orderForm.elements.name.focus(); }, 300);
+    };
+
+    var closeModal = function () {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("no-scroll");
+    };
+
+    document.querySelectorAll(".btn-order, .btn-order-open").forEach(function (btn) {
+      btn.addEventListener("click", function () { openModal(btn); });
+    });
+    modal.querySelectorAll(".modal-close, .modal-close-btn").forEach(function (b) {
+      b.addEventListener("click", closeModal);
+    });
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
+    });
+
+    orderForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var d = new FormData(orderForm);
+      var subject = "[Hodler Order] " + d.get("product") + " — " + d.get("name");
+      var body =
+        "New order request from the Hodler Store website\n\n" +
+        "Product: " + d.get("product") + "\n" +
+        "Quantity: " + d.get("qty") + "\n" +
+        "Size / color: " + (d.get("size") || "-") + "\n\n" +
+        "Name: " + d.get("name") + "\n" +
+        "Phone: " + d.get("phone") + "\n" +
+        "Email: " + d.get("email") + "\n" +
+        "Preferred contact: " + d.get("contact") + "\n\n" +
+        "Notes:\n" + (d.get("note") || "-");
+      window.location.href =
+        "mailto:nambabi2609@gmail.com?subject=" + encodeURIComponent(subject) +
+        "&body=" + encodeURIComponent(body);
+      modal.classList.add("sent");
     });
   }
 
